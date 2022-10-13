@@ -18,9 +18,12 @@ if(BUILD_UTIL_NCIO)
   add_subdirectory(netcdf_io)
 endif()
 
+if(BUILD_UTIL_BUFR)
+  add_subdirectory(bufr_tools)
+endif()
+
 if(BUILD_UTIL_COM)
   add_subdirectory(Analysis_Utilities)
-  add_subdirectory(bufr_tools)
   add_subdirectory(radar_process)
 endif()
 

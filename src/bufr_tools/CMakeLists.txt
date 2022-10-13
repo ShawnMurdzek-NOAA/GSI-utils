@@ -9,6 +9,7 @@ add_executable(bufr_decode_sample.x bufr_decode_sample.f90)
 add_executable(bufr_encode_sample.x bufr_encode_sample.f90)
 add_executable(bufr_decode_radiance.x bufr_decode_radiance.f90)
 add_executable(prepbufr_decode_all.x prepbufr_decode_all.f90)
+add_executable(prepbufr_decode_csv.x prepbufr_decode_csv.f90)
 add_executable(prepbufr_encode_surface.x prepbufr_encode_surface.f90)
 add_executable(prepbufr_encode_upperair.x prepbufr_encode_upperair.f90)
 add_executable(prepbufr_inventory.x prepbufr_inventory.f90)
@@ -22,6 +23,7 @@ list(APPEND _targets
   bufr_encode_sample.x
   bufr_decode_radiance.x
   prepbufr_decode_all.x
+  prepbufr_decode_csv.x
   prepbufr_encode_surface.x
   prepbufr_encode_upperair.x
   prepbufr_inventory.x
