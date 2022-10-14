@@ -1,8 +1,11 @@
-program prepbufr_decode_all
+program prepbufr_decode_csv
 !
 ! read all observations out from prepbufr. 
 ! read bufr table from prepbufr file
 ! write all obs to a CSV that can be easily read by Python
+!
+! shawn.s.murdzek@noaa.gov
+! Date Created: 14 October 2022
 !
  implicit none
 
