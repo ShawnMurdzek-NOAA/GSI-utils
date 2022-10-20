@@ -2,6 +2,9 @@ program prepbufr_encode_csv
 !
 ! Write an entire CSV of observations into a prepbufr file
 !
+! Prepbufr CSV must be called prepbufr.csv and be located in the same directory
+! as this scrip. The output BUFR file is simply called "prepbufr".
+!
 ! Note: The organization of prepbufr files is still a little opaque to me. In
 ! prepbufr_decode_all.f90, there appear to be 3 tiers of organization: nmsg,
 ! ntb, and k. k is the easiest to interpret, it's simply the vertical level.
@@ -30,17 +33,17 @@ program prepbufr_encode_csv
  real(8) :: hdr(mxmn),obs(mxmn,mxlv),qcf(mxmn,mxlv),oer(mxmn,mxlv)
  real(8) :: temp(mxmn)
 
- character(8) :: subset,tsubset
+ character(8) :: subset
  integer      :: unit_in=10,unit_out=20,unit_table=30
- integer      :: idate,iret,nlvl,i,k,nmsg,ntb
- integer      :: tmsg,tdate,tntb
+ integer      :: idate,iret,i,k,nmsg,ntb
+ integer      :: tmsg,tntb
 
- character(8) :: c_sid,tsid
+ character(8) :: c_sid
  real(8)      :: rstation_id
  equivalence(rstation_id,c_sid)
-!
-! write observations into prepbufr file
-!
+
+ write(*,*) 'Starting CSV encoding program'
+ 
  open(unit_in,file='prepbufr.csv',action='read')
  open(unit_table,file='prepbufr.table',action='read')
  open(unit_out,file='prepbufr',action='write',form='unformatted')
@@ -48,23 +51,29 @@ program prepbufr_encode_csv
  call openbf(unit_out,'OUT',unit_table)
 
 ! Read first line in CSV file, which just contains headers
- read(unit_in,'(1x 35(a0,","))')
+ read(unit_in,*)
 
 ! Loop over each line in CSV
  nmsg=0
  ntb=0
  k=1
  do
-   read(unit_in,'(1x 35(g0,","))',end=100) tmsg,tsubset,tdate,tntb,tsid,(temp(i),i=1,30)
+   read(unit_in,*,end=100) tmsg,subset,idate,tntb,c_sid,(temp(i),i=1,30)
+
+   if (nmsg /= tmsg) then
+     write(*,*)
+   endif
+
+   write(*,*) tmsg,ntb,subset
 
    if (nmsg == tmsg) then
      ! Continue with same message
      if (ntb /= tntb) then
        ! Write data
        call ufbint(unit_out,hdr,mxmn,1,iret,hdstr)
-       call ufbint(unit_out,obs,mxmn,k,iret,obstr)
-       call ufbint(unit_out,oer,mxmn,k,iret,oestr)
-       call ufbint(unit_out,qcf,mxmn,k,iret,qcstr)
+       call ufbint(unit_out,obs,mxmn,k-1,iret,obstr)
+       call ufbint(unit_out,oer,mxmn,k-1,iret,oestr)
+       call ufbint(unit_out,qcf,mxmn,k-1,iret,qcstr)
        call writsb(unit_out)
 
        ! Start new ntb
@@ -75,12 +84,14 @@ program prepbufr_encode_csv
 
    else
      ! Write data and close old message
-     call ufbint(unit_out,hdr,mxmn,1,iret,hdstr)
-     call ufbint(unit_out,obs,mxmn,k,iret,obstr)
-     call ufbint(unit_out,oer,mxmn,k,iret,oestr)
-     call ufbint(unit_out,qcf,mxmn,k,iret,qcstr)
-     call writsb(unit_out)
-     call closmg(unit_out)
+     if (nmsg > 0) then
+       call ufbint(unit_out,hdr,mxmn,1,iret,hdstr)
+       call ufbint(unit_out,obs,mxmn,k-1,iret,obstr)
+       call ufbint(unit_out,oer,mxmn,k-1,iret,oestr)
+       call ufbint(unit_out,qcf,mxmn,k-1,iret,qcstr)
+       call writsb(unit_out)
+       call closmg(unit_out)
+     endif
 
      ! Start new message
      nmsg=tmsg
@@ -110,5 +121,7 @@ program prepbufr_encode_csv
 
 100 close(unit_in)
  call closbf(unit_out)
+ write(*,*)
+ write(*,*) 'Program finished successfully'
 
 end program
