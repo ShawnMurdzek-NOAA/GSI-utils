@@ -9,7 +9,7 @@ These are GSI utilities for various functions.
 
 Use the build_hera_intel.env (or build_jet_intel.env) from RRFS (ufs-srweather-app/env/build_hera_intel.env).
 Also note that you may have to load the modules from ufs-srweather-app/env/srw_common separately. This
-environment uses the `rrfs-env` alias on Jet and Hera.
+environment uses the `rrfs_env` alias on Jet and Hera and is also available in nature_run_wflow/env.
 
 ### Compilation Steps:
 
