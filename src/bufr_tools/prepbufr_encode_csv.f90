@@ -3,7 +3,7 @@ program prepbufr_encode_csv
 ! Write an entire CSV of observations into a prepbufr file
 !
 ! Prepbufr CSV must be called prepbufr.csv and be located in the same directory
-! as this scrip. The output BUFR file is simply called "prepbufr".
+! as this script. The output BUFR file is simply called "prepbufr".
 !
 ! Note: The organization of prepbufr files is still a little opaque to me. In
 ! prepbufr_decode_all.f90, there appear to be 3 tiers of organization: nmsg,
@@ -19,6 +19,11 @@ program prepbufr_encode_csv
 !
 ! Luckily, how the prepbufr is structured does not matter here. That is taken
 ! care of in the Python script that creates the prepbufr CSV file.
+!
+! NOTE: This program CANNOT handle SIDs that have spaces in them (some MSONET 
+! IDs have spaces). In order to avoid a runtime error when reading the CSV file
+! (the error code will be 59), place all SIDs with spaces in single quotes ('
+! ').
 !
 ! shawn.s.murdzek@noaa.gov
 ! Date Created: 14 October 2022
@@ -79,6 +84,11 @@ program prepbufr_encode_csv
        ! Start new ntb
        ntb=tntb
        k=1
+     
+       hdr(1)=rstation_id
+       do i=1,7
+         hdr(i+1)=temp(i)
+       enddo
 
      endif
 
@@ -120,6 +130,12 @@ program prepbufr_encode_csv
  enddo
 
 100 close(unit_in)
+ call ufbint(unit_out,hdr,mxmn,1,iret,hdstr)
+ call ufbint(unit_out,obs,mxmn,k-1,iret,obstr)
+ call ufbint(unit_out,oer,mxmn,k-1,iret,oestr)
+ call ufbint(unit_out,qcf,mxmn,k-1,iret,qcstr)
+ call writsb(unit_out)
+ call closmg(unit_out)
  call closbf(unit_out)
  write(*,*)
  write(*,*) 'Program finished successfully'
