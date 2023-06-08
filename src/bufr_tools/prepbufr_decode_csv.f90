@@ -22,7 +22,7 @@ program prepbufr_decode_csv
  character(4), dimension(ndrift) :: drifta=(/ 'XDR','YDR','HRDR' /)
  character(5), dimension(nsst) :: ssta=(/ 'MSST','DBSS','SST1','SSTQM','SSTOE' /)
  character(7), dimension(nmisc1) :: misc1a=(/ 'PRVSTG','SPRVSTG','CDTP','GCDTT','CDTP_QM','HOWV','CEILING' /)
- character(4), dimension(nmisc2) :: misc2a=(/ 'QIFN','TOCC','HBLCS','POAF','IALR' /)
+ character(5), dimension(nmisc2) :: misc2a=(/ 'QIFN','TOCC','HBLCS','POAF','IALR' /)
  character(80) :: hdstr,obstr,qcstr,oestr,driftstr,sststr,miscstr1,miscstr2
 
  real(8) :: hdr(mxmn),obs(mxmn,mxlv),qcf(mxmn,mxlv),oer(mxmn,mxlv),drift(mxmn,mxlv),sst(mxmn,mxlv), &
