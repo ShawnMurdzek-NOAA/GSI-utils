@@ -51,13 +51,14 @@ program prepbufr_encode_csv
  character(80):: tsbstr='TSB'
  character(80):: acidstr='ACID'
  real(8) :: hdr(mxmn)
- real(8) :: temp(80)
+ real(8) :: temp(80),tpc(2)
 
  character(8) :: subset
  integer      :: unit_in=10,unit_out=20,unit_table=30
  integer      :: idate,iret,i,nmsg,ntb
  integer      :: tmsg,tntb
  real(8)      :: missing=1.0E11
+ real(8)      :: vctd
 
  character(8) :: c_sid
  real(8)      :: rstation_id
@@ -70,6 +71,9 @@ program prepbufr_encode_csv
  open(unit_out,file='prepbufr',action='write',form='unformatted')
  call datelen(10)
  call openbf(unit_out,'OUT',unit_table)
+
+! Write code associated with virtual temperature
+ call ufbqcd(unit_out,'VIRTMP',vctd)
 
 ! Read first line in CSV file, which just contains headers
  read(unit_in,*)

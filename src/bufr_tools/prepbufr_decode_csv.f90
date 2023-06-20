@@ -105,7 +105,8 @@ program prepbufr_decode_csv
                              (trim(prva(i)),i=1,nprv),(trim(sprva(i)),i=1,nsprv),        &
                              (trim(howva(i)),i=1,nhowv),(trim(ceila(i)),i=1,nceil),      &
                              (trim(qifna(i)),i=1,nqifn),(trim(hblcsa(i)),i=1,nhblcs),    &
-                             (trim(tsba(i)),i=1,ntsb),(trim(acida(i)),i=1,nacid),'tvflg'
+                             (trim(tsba(i)),i=1,ntsb),(trim(acida(i)),i=1,nacid),'tvflg',&
+                             'vtcd'
 
  call openbf(unit_in,'IN',unit_in)
  call dxdump(unit_in,24)
@@ -167,7 +168,7 @@ program prepbufr_decode_csv
                                     (prv(i,k),i=1,nprv),(sprv(i,k),i=1,nsprv),                &
                                     (howv(i,k),i=1,nhowv),(ceil(i,k),i=1,nceil),              &
                                     (qifn(i,k),i=1,nqifn),(hblcs(i,k),i=1,nhblcs),            &
-                                    (tsb(i,k),i=1,ntsb),(acid(i,k),i=1,nacid),tvflg(k)
+                                    (tsb(i,k),i=1,ntsb),(acid(i,k),i=1,nacid),tvflg(k),vtcd
      enddo
    enddo sb_report
  enddo msg_report
