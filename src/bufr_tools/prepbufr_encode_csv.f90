@@ -30,18 +30,34 @@ program prepbufr_encode_csv
 !
  implicit none
 
- integer, parameter :: mxmn=35, mxlv=250
+ integer, parameter :: mxmn=65, mxlv=250
  character(80):: hdstr='SID XOB YOB DHR TYP ELV SAID T29'
- character(80):: obstr='POB QOB TOB ZOB UOB VOB PWO CAT PRSS'
- character(80):: qcstr='PQM QQM TQM ZQM WQM NUL PWQ     '
- character(80):: oestr='POE QOE TOE NUL WOE NUL PWE     '
- real(8) :: hdr(mxmn),obs(mxmn,mxlv),qcf(mxmn,mxlv),oer(mxmn,mxlv)
- real(8) :: temp(mxmn)
+ character(80):: obstr='POB QOB TOB ZOB UOB VOB PWO MXGS HOVI CAT PRSS TDO PMO'
+ character(80):: qcstr='PQM QQM TQM ZQM WQM NUL PWQ PMQ'
+ character(80):: oestr='POE QOE TOE NUL WOE NUL PWE'
+ character(80):: driftstr='XDR YDR HRDR'
+ character(80):: sststr='MSST DBSS SST1 SSTQM SSTOE'
+ character(80):: fcstr='TFC UFC VFC'
+ character(80):: cldstr='VSSO CLAM HOCB'
+ character(80):: maxminstr='MXTM MITM'
+ character(80):: aircftstr='POAF IALR'
+ character(80):: prwestr='PRWE'
+ character(80):: prvstr='PRVSTG'
+ character(80):: sprvstr='SPRVSTG'
+ character(80):: howvstr='HOWV'
+ character(80):: ceilstr='CEILING'
+ character(80):: qifnstr='QIFN'
+ character(80):: hblcsstr='HBLCS'
+ character(80):: tsbstr='TSB'
+ character(80):: acidstr='ACID'
+ real(8) :: hdr(mxmn)
+ real(8) :: temp(80)
 
  character(8) :: subset
  integer      :: unit_in=10,unit_out=20,unit_table=30
- integer      :: idate,iret,i,k,nmsg,ntb
+ integer      :: idate,iret,i,nmsg,ntb
  integer      :: tmsg,tntb
+ real(8)      :: missing=1.0E11
 
  character(8) :: c_sid
  real(8)      :: rstation_id
@@ -61,79 +77,109 @@ program prepbufr_encode_csv
 ! Loop over each line in CSV
  nmsg=0
  ntb=0
- k=1
  do
-   read(unit_in,*,end=100) tmsg,subset,idate,tntb,c_sid,(temp(i),i=1,30)
+   read(unit_in,*,end=100) tmsg,subset,idate,tntb,c_sid,(temp(i),i=1,68)
 
    if (nmsg /= tmsg) then
      write(*,*)
    endif
 
-   write(*,*) tmsg,ntb,subset
-
+   write(*,*) tmsg,tntb,c_sid,' ',subset
+       
    if (nmsg == tmsg) then
      ! Continue with same message
      if (ntb /= tntb) then
        ! Write data
-       call ufbint(unit_out,hdr,mxmn,1,iret,hdstr)
-       call ufbint(unit_out,obs,mxmn,k-1,iret,obstr)
-       call ufbint(unit_out,oer,mxmn,k-1,iret,oestr)
-       call ufbint(unit_out,qcf,mxmn,k-1,iret,qcstr)
        call writsb(unit_out)
 
        ! Start new ntb
        ntb=tntb
-       k=1
      
        hdr(1)=rstation_id
        do i=1,7
          hdr(i+1)=temp(i)
        enddo
+       call ufbint(unit_out,hdr,mxmn,1,iret,hdstr)
 
      endif
 
    else
      ! Write data and close old message
      if (nmsg > 0) then
-       call ufbint(unit_out,hdr,mxmn,1,iret,hdstr)
-       call ufbint(unit_out,obs,mxmn,k-1,iret,obstr)
-       call ufbint(unit_out,oer,mxmn,k-1,iret,oestr)
-       call ufbint(unit_out,qcf,mxmn,k-1,iret,qcstr)
        call writsb(unit_out)
        call closmg(unit_out)
      endif
 
      ! Start new message
      nmsg=tmsg
-     k=1
 
      call openmb(unit_out,subset,idate)
      hdr(1)=rstation_id
      do i=1,7
        hdr(i+1)=temp(i)
      enddo
+     call ufbint(unit_out,hdr,mxmn,1,iret,hdstr)
  
    endif
-
-   do i=1,9
-     obs(i,k)=temp(i+7)
-   enddo
-   do i=1,7
-     qcf(i,k)=temp(i+16)
-   enddo
-   do i=1,7
-     oer(i,k)=temp(i+23)
-   enddo
-
-   k=k+1
+   
+   if (sum(temp(8:20)).lt.(13*missing)) then 
+     call ufbint(unit_out,temp(8:20),mxmn,1,iret,obstr)
+   endif
+   if (sum(temp(21:28)).lt.(8*missing)) then 
+     call ufbint(unit_out,temp(21:28),mxmn,1,iret,qcstr)
+   endif
+   if (sum(temp(29:35)).lt.(7*missing)) then 
+     call ufbint(unit_out,temp(29:35),mxmn,1,iret,oestr)
+   endif
+   if (sum(temp(36:38)).lt.(3*missing)) then 
+     call ufbint(unit_out,temp(36:38),mxmn,1,iret,driftstr)
+   endif
+   if (sum(temp(39:43)).lt.(5*missing)) then 
+     call ufbint(unit_out,temp(39:43),mxmn,1,iret,sststr)
+   endif
+   if (sum(temp(44:46)).lt.(3*missing)) then 
+     call ufbint(unit_out,temp(44:46),mxmn,1,iret,fcstr)
+   endif
+   if (sum(temp(47:49)).lt.(3*missing)) then 
+     call ufbint(unit_out,temp(47:49),mxmn,1,iret,cldstr)
+   endif
+   if (sum(temp(54:55)).lt.(2*missing)) then 
+     call ufbint(unit_out,temp(54:55),mxmn,1,iret,maxminstr)
+   endif
+   if (sum(temp(56:57)).lt.(2*missing)) then 
+     call ufbint(unit_out,temp(56:57),mxmn,1,iret,aircftstr)
+   endif
+   if (temp(58).lt.missing) then 
+     call ufbint(unit_out,temp(58),mxmn,1,iret,prwestr)
+   endif
+   if (temp(59).lt.missing) then 
+     call ufbint(unit_out,temp(59),mxmn,1,iret,prvstr)
+   endif
+   if (temp(60).lt.missing) then 
+     call ufbint(unit_out,temp(60),mxmn,1,iret,sprvstr)
+   endif
+   if (temp(61).lt.missing) then 
+     call ufbint(unit_out,temp(61),mxmn,1,iret,howvstr)
+   endif
+   if (temp(62).lt.missing) then 
+     call ufbint(unit_out,temp(62),mxmn,1,iret,ceilstr)
+   endif
+   if (temp(63).lt.missing) then 
+     call ufbint(unit_out,temp(63),mxmn,1,iret,qifnstr)
+   endif
+   if (temp(64).lt.missing) then 
+     call ufbint(unit_out,temp(64),mxmn,1,iret,hblcsstr)
+   endif
+   if (temp(65).lt.missing) then 
+     call ufbint(unit_out,temp(65),mxmn,1,iret,tsbstr)
+   endif
+   if (temp(66).lt.missing) then 
+     call ufbint(unit_out,temp(66),mxmn,1,iret,acidstr)
+   endif
 
  enddo
 
 100 close(unit_in)
- call ufbint(unit_out,hdr,mxmn,1,iret,hdstr)
- call ufbint(unit_out,obs,mxmn,k-1,iret,obstr)
- call ufbint(unit_out,oer,mxmn,k-1,iret,oestr)
- call ufbint(unit_out,qcf,mxmn,k-1,iret,qcstr)
  call writsb(unit_out)
  call closmg(unit_out)
  call closbf(unit_out)
