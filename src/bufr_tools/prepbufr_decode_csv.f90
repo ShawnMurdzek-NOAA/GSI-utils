@@ -48,7 +48,7 @@ program prepbufr_decode_csv
             qifn(mxmn,mxlv),hblcs(mxmn,mxlv),tsb(mxmn,mxlv),acid(mxmn,mxlv) 
 
  real :: bmiss=1.0e9
- real(8) :: tpc(mxlv,20)
+ real(8) :: tpc(mxlv,100)
  integer :: tvflg(mxlv)
 
  INTEGER        :: ireadmg,ireadsb
@@ -126,10 +126,10 @@ program prepbufr_decode_csv
 
      ! Determine if temperature is virtual or sensible (code comes from
      ! read_prepbufr.f90 in GSI)
-     call ufbevn(unit_in,tpc,1,mxlv,20,levs,'TPC')
+     call ufbevn(unit_in,tpc,1,mxlv,100,levs,'TPC')
      do k=1,levs
        tvflg(k)=1
-       do j=1,20
+       do j=1,100
          if (tpc(k,j)==vtcd) tvflg(k)=0
          if (tpc(k,j)>=bmiss) exit
        enddo

@@ -72,15 +72,11 @@ program prepbufr_encode_csv
  call datelen(10)
  call openbf(unit_out,'OUT',unit_table)
 
-! Write code associated with virtual temperature
- call ufbqcd(unit_out,'VIRTMP',vctd)
-
 ! Read first line in CSV file, which just contains headers
  read(unit_in,*)
 
 ! Loop over each line in CSV
  nmsg=0
- ntb=0
  do
    read(unit_in,*,end=100) tmsg,subset,idate,tntb,c_sid,(temp(i),i=1,68)
 
@@ -90,27 +86,9 @@ program prepbufr_encode_csv
 
    write(*,*) tmsg,tntb,c_sid,' ',subset
        
-   if (nmsg == tmsg) then
-     ! Continue with same message
-     if (ntb /= tntb) then
-       ! Write data
-       call writsb(unit_out)
-
-       ! Start new ntb
-       ntb=tntb
-     
-       hdr(1)=rstation_id
-       do i=1,7
-         hdr(i+1)=temp(i)
-       enddo
-       call ufbint(unit_out,hdr,mxmn,1,iret,hdstr)
-
-     endif
-
-   else
-     ! Write data and close old message
+   if (nmsg /= tmsg) then
+     ! Close old message
      if (nmsg > 0) then
-       call writsb(unit_out)
        call closmg(unit_out)
      endif
 
@@ -118,15 +96,16 @@ program prepbufr_encode_csv
      nmsg=tmsg
 
      call openmb(unit_out,subset,idate)
-     hdr(1)=rstation_id
-     do i=1,7
-       hdr(i+1)=temp(i)
-     enddo
-     call ufbint(unit_out,hdr,mxmn,1,iret,hdstr)
  
    endif
+       
+   hdr(1)=rstation_id
+   do i=1,7
+     hdr(i+1)=temp(i)
+   enddo
+   call ufbint(unit_out,hdr,mxmn,1,iret,hdstr)
    
-   if (sum(temp(8:20)).lt.(13*missing)) then 
+   if (sum(temp(8:20)).lt.(13*missing)) then
      call ufbint(unit_out,temp(8:20),mxmn,1,iret,obstr)
    endif
    if (sum(temp(21:28)).lt.(8*missing)) then 
@@ -180,11 +159,11 @@ program prepbufr_encode_csv
    if (temp(66).lt.missing) then 
      call ufbint(unit_out,temp(66),mxmn,1,iret,acidstr)
    endif
+   call writsb(unit_out)
 
  enddo
 
 100 close(unit_in)
- call writsb(unit_out)
  call closmg(unit_out)
  call closbf(unit_out)
  write(*,*)
