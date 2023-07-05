@@ -56,9 +56,11 @@ program prepbufr_decode_csv
  character(8)   :: subset
  integer        :: unit_in=10,idate,nmsg,ntb,nobs
 
- character(8)   :: c_sid
- real(8)        :: rstation_id
+ character(8)   :: c_sid,c_prvstg,c_sprvstg
+ real(8)        :: rstation_id,r_prvstg,r_sprvstg
  equivalence(rstation_id,c_sid)
+ equivalence(r_prvstg,c_prvstg)
+ equivalence(r_sprvstg,c_sprvstg)
 
  integer        :: i,j,k,iret_max,levs
  integer, dimension(20) :: iret
@@ -159,13 +161,15 @@ program prepbufr_decode_csv
      rstation_id=hdr(1)
      iret_max = maxval(iret)
      do k=1,iret_max
+       r_prvstg=prv(1,k)
+       r_sprvstg=sprv(1,k)
        write(100, '(1x *(g0,","))') nmsg,trim(subset),idate,ntb,trim(c_sid),(hdr(i),i=2,nhd), &
                                     (obs(i,k),i=1,nob),(qcf(i,k),i=1,nqc),(oer(i,k),i=1,noe), &
                                     (drift(i,k),i=1,ndrift),(sst(i,k),i=1,nsst),              &
                                     (fc(i,k),i=1,nfc),(cld(i,k),i=1,ncld),                    &
                                     (goescld(i,k),i=1,ngoescld),(maxmin(i,k),i=1,nmaxmin),    &
                                     (aircft(i,k),i=1,naircft),(prwe(i,k),i=1,nprwe),          &
-                                    (prv(i,k),i=1,nprv),(sprv(i,k),i=1,nsprv),                &
+                                    c_prvstg,c_sprvstg,                                       &
                                     (howv(i,k),i=1,nhowv),(ceil(i,k),i=1,nceil),              &
                                     (qifn(i,k),i=1,nqifn),(hblcs(i,k),i=1,nhblcs),            &
                                     (tsb(i,k),i=1,ntsb),(acid(i,k),i=1,nacid),tvflg(k),vtcd
