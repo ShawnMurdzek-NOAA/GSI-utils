@@ -51,18 +51,21 @@ program prepbufr_encode_csv
  character(80):: tsbstr='TSB'
  character(80):: acidstr='ACID'
  real(8) :: hdr(mxmn)
- real(8) :: temp(80),tpc(2)
+ real(8) :: temp1(80),temp2(10),tpc(2)
 
  character(8) :: subset
  integer      :: unit_in=10,unit_out=20,unit_table=30
- integer      :: idate,iret,i,nmsg,ntb
+ integer      :: idate,iret,i,j,nmsg,ntb
  integer      :: tmsg,tntb
  real(8)      :: missing=1.0E11
+ character(17):: cmissing='100000000000.0000'
  real(8)      :: vctd
 
- character(8) :: c_sid
- real(8)      :: rstation_id
+ character(8) :: c_sid,c_prvstg,c_sprvstg
+ real(8)      :: rstation_id,r_prvstg,r_sprvstg
  equivalence(rstation_id,c_sid)
+ equivalence(r_prvstg,c_prvstg)
+ equivalence(r_sprvstg,c_sprvstg)
 
  write(*,*) 'Starting CSV encoding program'
  
@@ -78,7 +81,8 @@ program prepbufr_encode_csv
 ! Loop over each line in CSV
  nmsg=0
  do
-   read(unit_in,*,end=100) tmsg,subset,idate,tntb,c_sid,(temp(i),i=1,68)
+   read(unit_in,*,end=100) tmsg,subset,idate,tntb,c_sid,(temp1(i),i=1,58), &
+                           c_prvstg,c_sprvstg,(temp2(j),i=1,8)
 
    if (nmsg /= tmsg) then
      write(*,*)
@@ -101,63 +105,63 @@ program prepbufr_encode_csv
        
    hdr(1)=rstation_id
    do i=1,7
-     hdr(i+1)=temp(i)
+     hdr(i+1)=temp1(i)
    enddo
    call ufbint(unit_out,hdr,mxmn,1,iret,hdstr)
    
-   if (sum(temp(8:20)).lt.(13*missing)) then
-     call ufbint(unit_out,temp(8:20),mxmn,1,iret,obstr)
+   if (sum(temp1(8:20)).lt.(13*missing)) then
+     call ufbint(unit_out,temp1(8:20),mxmn,1,iret,obstr)
    endif
-   if (sum(temp(21:28)).lt.(8*missing)) then 
-     call ufbint(unit_out,temp(21:28),mxmn,1,iret,qcstr)
+   if (sum(temp1(21:28)).lt.(8*missing)) then 
+     call ufbint(unit_out,temp1(21:28),mxmn,1,iret,qcstr)
    endif
-   if (sum(temp(29:35)).lt.(7*missing)) then 
-     call ufbint(unit_out,temp(29:35),mxmn,1,iret,oestr)
+   if (sum(temp1(29:35)).lt.(7*missing)) then 
+     call ufbint(unit_out,temp1(29:35),mxmn,1,iret,oestr)
    endif
-   if (sum(temp(36:38)).lt.(3*missing)) then 
-     call ufbint(unit_out,temp(36:38),mxmn,1,iret,driftstr)
+   if (sum(temp1(36:38)).lt.(3*missing)) then 
+     call ufbint(unit_out,temp1(36:38),mxmn,1,iret,driftstr)
    endif
-   if (sum(temp(39:43)).lt.(5*missing)) then 
-     call ufbint(unit_out,temp(39:43),mxmn,1,iret,sststr)
+   if (sum(temp1(39:43)).lt.(5*missing)) then 
+     call ufbint(unit_out,temp1(39:43),mxmn,1,iret,sststr)
    endif
-   if (sum(temp(44:46)).lt.(3*missing)) then 
-     call ufbint(unit_out,temp(44:46),mxmn,1,iret,fcstr)
+   if (sum(temp1(44:46)).lt.(3*missing)) then 
+     call ufbint(unit_out,temp1(44:46),mxmn,1,iret,fcstr)
    endif
-   if (sum(temp(47:49)).lt.(3*missing)) then 
-     call ufbint(unit_out,temp(47:49),mxmn,1,iret,cldstr)
+   if (sum(temp1(47:49)).lt.(3*missing)) then 
+     call ufbint(unit_out,temp1(47:49),mxmn,1,iret,cldstr)
    endif
-   if (sum(temp(54:55)).lt.(2*missing)) then 
-     call ufbint(unit_out,temp(54:55),mxmn,1,iret,maxminstr)
+   if (sum(temp1(54:55)).lt.(2*missing)) then 
+     call ufbint(unit_out,temp1(54:55),mxmn,1,iret,maxminstr)
    endif
-   if (sum(temp(56:57)).lt.(2*missing)) then 
-     call ufbint(unit_out,temp(56:57),mxmn,1,iret,aircftstr)
+   if (sum(temp1(56:57)).lt.(2*missing)) then 
+     call ufbint(unit_out,temp1(56:57),mxmn,1,iret,aircftstr)
    endif
-   if (temp(58).lt.missing) then 
-     call ufbint(unit_out,temp(58),mxmn,1,iret,prwestr)
+   if (temp1(58).lt.missing) then 
+     call ufbint(unit_out,temp1(58),mxmn,1,iret,prwestr)
    endif
-   if (temp(59).lt.missing) then 
-     call ufbint(unit_out,temp(59),mxmn,1,iret,prvstr)
+   if (c_prvstg.ne.cmissing) then
+     call ufbint(unit_out,r_prvstg,mxmn,1,iret,prvstr)
    endif
-   if (temp(60).lt.missing) then 
-     call ufbint(unit_out,temp(60),mxmn,1,iret,sprvstr)
+   if (c_sprvstg.ne.cmissing) then 
+     call ufbint(unit_out,r_sprvstg,mxmn,1,iret,sprvstr)
    endif
-   if (temp(61).lt.missing) then 
-     call ufbint(unit_out,temp(61),mxmn,1,iret,howvstr)
+   if (temp2(1).lt.missing) then 
+     call ufbint(unit_out,temp2(1),mxmn,1,iret,howvstr)
    endif
-   if (temp(62).lt.missing) then 
-     call ufbint(unit_out,temp(62),mxmn,1,iret,ceilstr)
+   if (temp2(2).lt.missing) then 
+     call ufbint(unit_out,temp2(2),mxmn,1,iret,ceilstr)
    endif
-   if (temp(63).lt.missing) then 
-     call ufbint(unit_out,temp(63),mxmn,1,iret,qifnstr)
+   if (temp2(3).lt.missing) then 
+     call ufbint(unit_out,temp2(3),mxmn,1,iret,qifnstr)
    endif
-   if (temp(64).lt.missing) then 
-     call ufbint(unit_out,temp(64),mxmn,1,iret,hblcsstr)
+   if (temp2(4).lt.missing) then 
+     call ufbint(unit_out,temp2(4),mxmn,1,iret,hblcsstr)
    endif
-   if (temp(65).lt.missing) then 
-     call ufbint(unit_out,temp(65),mxmn,1,iret,tsbstr)
+   if (temp2(5).lt.missing) then 
+     call ufbint(unit_out,temp2(5),mxmn,1,iret,tsbstr)
    endif
-   if (temp(66).lt.missing) then 
-     call ufbint(unit_out,temp(66),mxmn,1,iret,acidstr)
+   if (temp2(6).lt.missing) then 
+     call ufbint(unit_out,temp2(6),mxmn,1,iret,acidstr)
    endif
    call writsb(unit_out)
 
